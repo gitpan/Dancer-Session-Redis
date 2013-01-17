@@ -4,7 +4,7 @@
       "Anton Gerasimov <chim@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.112150",
+   "generated_by" : "ExtUtils::MakeMaker version 6.64, CPAN::Meta::Converter version 2.112621",
    "license" : [
       "perl_5"
    ],
@@ -22,7 +22,8 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Test::More" : "0.98"
+            "Test::More" : "0.98",
+            "Test::Pod" : "1.22"
          }
       },
       "configure" : {
@@ -52,5 +53,5 @@
          "url" : "https://github.com/Wu-Wu/Dancer-Session-Redis"
       }
    },
-   "version" : "v0.1.9"
+   "version" : "0.20"
 }

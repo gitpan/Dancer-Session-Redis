@@ -4,10 +4,11 @@ author:
   - 'Anton Gerasimov <chim@cpan.org>'
 build_requires:
   Test::More: 0.98
+  Test::Pod: 1.22
 configure_requires:
   ExtUtils::MakeMaker: 0
 dynamic_config: 1
-generated_by: 'ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.112150'
+generated_by: 'ExtUtils::MakeMaker version 6.64, CPAN::Meta::Converter version 2.112621'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -29,4 +30,4 @@ requires:
 resources:
   bugtracker: https://github.com/Wu-Wu/Dancer-Session-Redis/issues
   repository: https://github.com/Wu-Wu/Dancer-Session-Redis
-version: v0.1.9
+version: 0.20

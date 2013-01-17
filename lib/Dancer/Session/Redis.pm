@@ -9,7 +9,7 @@ use Dancer::Config 'setting';
 use Storable ();
 use Carp ();
 
-our $VERSION = '0.1.9';
+our $VERSION = '0.20';
 
 my $_redis;
 my %options = ();
@@ -24,6 +24,7 @@ sub init {
         if (ref $opts and ref $opts eq 'HASH' ) {
             %options = (
                 'server'   => $opts->{'server'}   || undef,
+                'sock'     => $opts->{'sock'}     || undef,
                 'database' => $opts->{'database'} || 0,
                 'expire'   => $opts->{'expire'}   || 900,
                 'debug'    => $opts->{'debug'}    || 0,
@@ -37,7 +38,9 @@ sub init {
         Carp::croak "Settings 'redis_session' is not defined!";
     }
 
-    Carp::croak "Parameter 'redis_session.server' must be defined" unless defined $options{'server'};
+    unless (defined $options{'server'} || defined $options{'sock'}) {
+        Carp::croak "Parameter 'redis_session.server' or 'redis_session.sock' have to be defined";
+    }
 
     _redis_watchdog();
 }
@@ -65,9 +68,14 @@ sub _redis_watchdog {
 sub _redis_get_handle {
 
     my %params = (
-        server => $options{'server'},
         debug  => $options{'debug'},
     );
+
+	if (defined $options{'sock'}) {
+		$params{'sock'} = $options{'sock'};
+	} else {
+		$params{'server'} = $options{'server'};
+	}
 
     $params{password} = $options{'password'} if $options{'password'};
 
@@ -126,16 +134,22 @@ sub flush {
 1;
 __END__
 
+=pod
+
 =head1 NAME
 
 Dancer::Session::Redis - Redis backend for Dancer Session Engine
+
+=head1 VERSION
+
+version 0.20
 
 =head1 SYNOPSIS
 
     # in the Dancer config.yml:
     session: 'Redis'
     redis_session:
-        server: 'redi.example.com:6379'
+        sock: '/var/run/redis.sock'
         password: 'QmG_kZECJAvAcDaWqqSqoNLUka5v3unMe_8sqYMh6ST'
         database: 1
         expire: 3600
@@ -143,7 +157,6 @@ Dancer::Session::Redis - Redis backend for Dancer Session Engine
         ping: 5
 
     # or in the Dancer application:
-    setting session       => 'Redis';
     setting redis_session => {
         server   => 'redi.example.com:6379',
         password => 'QmG_kZECJAvAcDaWqqSqoNLUka5v3unMe_8sqYMh6ST',
@@ -152,11 +165,13 @@ Dancer::Session::Redis - Redis backend for Dancer Session Engine
         debug    => 0,
         ping     => 5,
     };
+    setting session => 'Redis';
 
 =head1 DESCRIPTION
 
 This module is a Redis backend for the session engine of Dancer application. This module is a descendant
-of L<Dancer::Session::Abstract>.
+of L<Dancer::Session::Abstract>. A simple demo apllication might be found in the C<eg/> directory of this
+distribution.
 
 =head1 CONFIGURATION
 
@@ -176,7 +191,11 @@ Settings for backend.
 
 =item I<server>
 
-Hostname and port of redis-server instance which will be used to store session data. This one is B<required>.
+Hostname and port of the redis-server instance which will be used to store session data. This one is B<required> unless I<sock> is defined.
+
+=item I<sock>
+
+unix socket path of the redis-server instance which will be used to store session data.
 
 =item I<password>
 
@@ -227,6 +246,11 @@ Retrieves session information from the Redis database.
 
 Deletes session information from the Redis database.
 
+=head1 BUGS
+
+Please report any bugs or feature requests through the web interface at
+L<https://github.com/Wu-Wu/Dancer-Session-Redis/issues>
+
 =head1 SEE ALSO
 
 L<Dancer>
@@ -239,7 +263,6 @@ L<Redis>
 
 L<redis.io|http://redis.io>
 
-
 =head1 AUTHOR
 
 Anton Gerasimov, E<lt>chim@cpan.orgE<gt>
@@ -248,11 +271,7 @@ Anton Gerasimov, E<lt>chim@cpan.orgE<gt>
 
 Copyright (C) 2012 by Anton Gerasimov
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
-
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
 
 =cut
