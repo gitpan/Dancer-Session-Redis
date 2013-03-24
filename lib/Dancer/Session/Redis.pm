@@ -1,15 +1,17 @@
 package Dancer::Session::Redis;
 
 # ABSTRACT: Redis backend for Dancer Session Engine
+
 use strict;
 use warnings;
 use parent 'Dancer::Session::Abstract';
-use Redis;
+use Redis 1.955;
 use Dancer::Config 'setting';
 use Storable ();
 use Carp ();
 
-our $VERSION = '0.20';
+our $VERSION = '0.21'; # VERSION
+our $AUTHORITY = 'cpan:CHIM'; # AUTHORITY
 
 my $_redis;
 my %options = ();
@@ -23,72 +25,30 @@ sub init {
     if (my $opts = setting('redis_session') ) {
         if (ref $opts and ref $opts eq 'HASH' ) {
             %options = (
-                'server'   => $opts->{'server'}   || undef,
-                'sock'     => $opts->{'sock'}     || undef,
-                'database' => $opts->{'database'} || 0,
-                'expire'   => $opts->{'expire'}   || 900,
-                'debug'    => $opts->{'debug'}    || 0,
-                'ping'     => $opts->{'ping'}     || 5,
-                'password' => $opts->{'password'} || undef,
+                server   => $opts->{server}   || undef,
+                sock     => $opts->{sock}     || undef,
+                database => $opts->{database} || 0,
+                expire   => $opts->{expire}   || 900,
+                debug    => $opts->{debug}    || 0,
+                password => $opts->{password} || undef,
             );
-        } else {
-            Carp::croak "Settings 'redis_session' must be a hash reference!";
         }
-    } else {
-        Carp::croak "Settings 'redis_session' is not defined!";
-    }
-
-    unless (defined $options{'server'} || defined $options{'sock'}) {
-        Carp::croak "Parameter 'redis_session.server' or 'redis_session.sock' have to be defined";
-    }
-
-    _redis_watchdog();
-}
-
-#
-# check redis handle and re-establish connection
-sub _redis_watchdog {
-    if ($_redis->{handle}) {
-        if (time - $_redis->{lastcheck} > $options{'ping'}) {
-            if ($_redis->{handle}->ping) {
-                $_redis->{lastcheck} = time;
-                return $_redis->{handle};
-            } else {
-                Carp::carp "Lost redis connection. Reconnecting...";
-                return _redis_get_handle();
-            }
+        else {
+            Carp::croak 'Settings redis_session must be a hash reference!';
         }
-    } else {
-        return _redis_get_handle();
     }
+    else {
+        Carp::croak 'Settings redis_session is not defined!';
+    }
+
+    unless (defined $options{server} || defined $options{sock}) {
+        Carp::croak 'Settings redis_session should include either server or sock parameter!';
+    }
+
+    # get radis handle
+    $self->redis;
 }
 
-#
-# connect to redis server and return handle (or croaks)
-sub _redis_get_handle {
-
-    my %params = (
-        debug  => $options{'debug'},
-    );
-
-	if (defined $options{'sock'}) {
-		$params{'sock'} = $options{'sock'};
-	} else {
-		$params{'server'} = $options{'server'};
-	}
-
-    $params{password} = $options{'password'} if $options{'password'};
-
-    $_redis->{handle} = Redis->new(%params);
-
-    $_redis->{lastcheck} = time if $_redis->{handle} && $_redis->{handle}->ping;
-
-    $_redis->{handle} and return $_redis->{handle};
-
-    Carp::croak "Unable connect to redis..." unless $_redis->{handle};
-}
-
-#
 # create a new session
 sub create {
     my ($class) = @_;
@@ -96,42 +56,66 @@ sub create {
     $class->new->flush;
 }
 
-#
 # fetch the session object by id
 sub retrieve($$) {
     my ($class, $id) = @_;
 
-    _redis_watchdog();
-    $_redis->{handle}->select($options{'database'});
-    $_redis->{handle}->expire($id => $options{'expire'});
+    my $self = $class->new;
+    $self->redis->select($options{database});
+    $self->redis->expire($id => $options{expire});
 
-    Storable::thaw($_redis->{handle}->get($id));
+    Storable::thaw($self->redis->get($id));
 }
 
-#
 # delete session
 sub destroy {
     my ($self) = @_;
 
-    _redis_watchdog();
-    $_redis->{handle}->select($options{'database'});
-    $_redis->{handle}->del($self->id);
+    $self->redis->select($options{database});
+    $self->redis->del($self->id);
 }
 
-#
 # flush session
 sub flush {
     my ($self) = @_;
 
-    _redis_watchdog();
-    $_redis->{handle}->select($options{'database'});
-    $_redis->{handle}->set($self->id => Storable::freeze($self));
-    $_redis->{handle}->expire($self->id => $options{'expire'});
+    $self->redis->select($options{database});
+    $self->redis->set($self->id => Storable::freeze($self));
+    $self->redis->expire($self->id => $options{expire});
 
     $self;
 }
 
-1;
+# get redis handle
+sub redis {
+    my ($self) = @_;
+
+    if (!$_redis || !$_redis->ping) {
+        my %params = (
+            debug     => $options{debug},
+            reconnect => 10,
+            every     => 100,
+        );
+
+        if (defined $options{sock}) {
+            $params{sock} = $options{sock};
+        }
+        else {
+            $params{server} = $options{server};
+        }
+
+        $params{password} = $options{password} if $options{password};
+
+        $_redis = Redis->new(%params);
+    }
+
+    $_redis and return $_redis;
+
+    Carp::croak "Unable connect to redis-server...";
+}
+
+1; # End of Dancer::Session::Redis
+
 __END__
 
 =pod
@@ -142,7 +126,7 @@ Dancer::Session::Redis - Redis backend for Dancer Session Engine
 
 =head1 VERSION
 
-version 0.20
+version 0.21
 
 =head1 SYNOPSIS
 
@@ -154,7 +138,6 @@ version 0.20
         database: 1
         expire: 3600
         debug: 0
-        ping: 5
 
     # or in the Dancer application:
     setting redis_session => {
@@ -163,7 +146,6 @@ version 0.20
         database => 1,
         expire   => 3600,
         debug    => 0,
-        ping     => 5,
     };
     setting session => 'Redis';
 
@@ -177,72 +159,62 @@ distribution.
 
 In order to use this session engine, you have to set up a few settings (in the app or app's configuration file).
 
-=over
-
-=item * session
+=head2 session
 
 Set the vaue B<Redis>. Required parameter.
 
-=item * redis_session
+=head2 redis_session
 
 Settings for backend.
 
-=over
-
-=item I<server>
+=head3 server
 
 Hostname and port of the redis-server instance which will be used to store session data. This one is B<required> unless I<sock> is defined.
 
-=item I<sock>
+=head3 sock
 
 unix socket path of the redis-server instance which will be used to store session data.
 
-=item I<password>
+=head3 password
 
 Password string for redis-server's AUTH command to processing any other commands. Optional. Check the redis-server
 manual for directive I<requirepass> if you would to use redis internal authentication.
 
-=item I<database>
+=head3 database
 
 Database # to store session data. Optional. Default value is 0.
 
-=item I<expire>
+=head3 expire
 
 Session TTL. Optional. Default value is 900 (seconds).
 
-=item I<ping>
-
-Time (in seconds) to check connection alive and re-establish in case of closed connection. Optional. Default value
-is 5 (seconds). Redis server close connection after a client is idle for seconds but server instance might be
-configured to not close client's connection. Check the redis server manual.
-
-=item I<debug>
+=head3 debug
 
 Enables debug information to STDERR, including all interactions with the redis-server. Optional. Default value is 0.
 
-=back
-
-=back
-
 =head1 METHODS
 
-=head2 init()
+=head2 init
 
 Validate settings and creates the initial connection to redis-server.
 
-=head2 create()
+=head2 redis
+
+Returns connection handle to the redis instance. Also establish new connection in case of C<dead> handle.
+
+=head2 create
 
 Creates a new object, runs C<flush> and returns the object.
 
-=head2 flush()
+=head2 flush
 
 Writes the session information to the Redis database.
 
-=head2 retrieve()
+=head2 retrieve
 
 Retrieves session information from the Redis database.
 
-=head2 destroy()
+=head2 destroy
 
 Deletes session information from the Redis database.
 
@@ -265,13 +237,13 @@ L<redis.io|http://redis.io>
 
 =head1 AUTHOR
 
-Anton Gerasimov, E<lt>chim@cpan.orgE<gt>
+Anton Gerasimov <chim@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2012 by Anton Gerasimov
+This software is copyright (c) 2012 by Anton Gerasimov.
 
-This library is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

@@ -1,39 +1,61 @@
-use 5.010;
-use ExtUtils::MakeMaker;
 
-my $meta_merge = {
-    META_MERGE => {
-        resources => {
-            repository => 'https://github.com/Wu-Wu/Dancer-Session-Redis',
-            bugtracker => 'https://github.com/Wu-Wu/Dancer-Session-Redis/issues',
-        },
-    }
-};
+use strict;
+use warnings;
 
-my %options = (
-    'NAME'          => 'Dancer::Session::Redis',
-    'VERSION_FROM'  => 'lib/Dancer/Session/Redis.pm',
-    'AUTHOR'        => 'Anton Gerasimov <chim@cpan.org>',
-    'ABSTRACT_FROM' => 'lib/Dancer/Session/Redis.pm',
-    'LICENSE'       => 'perl',
-    'PREREQ_PM'     => {
-        'Dancer'   => '1.3072',
-        'Redis'    => '1.955',
-        'strict'   => 0,
-        'warnings' => 0,
-        'parent'   => 0,
-        'Storable' => 0,
-        'Carp'     => 0,
-    },
-    'BUILD_REQUIRES' => {
-        'Test::More' => '0.98',
-        'Test::Pod'  => '1.22',
-    },
-    'MIN_PERL_VERSION' => '5.10.0',
-    'test' => {
-        'TESTS' => 't/*.t',
-    },
-    $ExtUtils::MakeMaker::VERSION >= 6.50 ? (%$meta_merge) : (),
+use 5.010001;
+
+use ExtUtils::MakeMaker 6.30;
+
+
+
+my %WriteMakefileArgs = (
+  "ABSTRACT" => "Redis backend for Dancer Session Engine",
+  "AUTHOR" => "Anton Gerasimov <chim\@cpan.org>",
+  "BUILD_REQUIRES" => {
+    "Test::More" => "0.98",
+    "Test::Pod" => "1.22"
+  },
+  "CONFIGURE_REQUIRES" => {
+    "ExtUtils::MakeMaker" => "6.30"
+  },
+  "DISTNAME" => "Dancer-Session-Redis",
+  "EXE_FILES" => [],
+  "LICENSE" => "perl",
+  "NAME" => "Dancer::Session::Redis",
+  "PREREQ_PM" => {
+    "Carp" => "1.26",
+    "Dancer" => "1.3072",
+    "Redis" => "1.955",
+    "Storable" => "2.27",
+    "feature" => 0,
+    "parent" => 0,
+    "strict" => 0,
+    "warnings" => 0
+  },
+  "VERSION" => "0.21",
+  "test" => {
+    "TESTS" => "t/*.t"
+  }
 );
 
-WriteMakefile(%options);
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
+}
+
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
+

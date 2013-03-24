@@ -2,7 +2,7 @@ NAME
     Dancer::Session::Redis - Redis backend for Dancer Session Engine
 
 VERSION
-    version 0.20
+    version 0.21
 
 SYNOPSIS
         # in the Dancer config.yml:
@@ -13,7 +13,6 @@ SYNOPSIS
             database: 1
             expire: 3600
             debug: 0
-            ping: 5
 
         # or in the Dancer application:
         setting redis_session => {
@@ -22,7 +21,6 @@ SYNOPSIS
             database => 1,
             expire   => 3600,
             debug    => 0,
-            ping     => 5,
         };
         setting session => 'Redis';
 
@@ -36,60 +34,53 @@ CONFIGURATION
     In order to use this session engine, you have to set up a few settings
     (in the app or app's configuration file).
 
-    *   session
+  session
+    Set the vaue Redis. Required parameter.
 
-        Set the vaue Redis. Required parameter.
+  redis_session
+    Settings for backend.
 
-    *   redis_session
+   server
+    Hostname and port of the redis-server instance which will be used to
+    store session data. This one is required unless *sock* is defined.
 
-        Settings for backend.
+   sock
+    unix socket path of the redis-server instance which will be used to
+    store session data.
 
-        *server*
-            Hostname and port of the redis-server instance which will be
-            used to store session data. This one is required unless *sock*
-            is defined.
+   password
+    Password string for redis-server's AUTH command to processing any other
+    commands. Optional. Check the redis-server manual for directive
+    *requirepass* if you would to use redis internal authentication.
 
-        *sock*
-            unix socket path of the redis-server instance which will be used
-            to store session data.
+   database
+    Database # to store session data. Optional. Default value is 0.
 
-        *password*
-            Password string for redis-server's AUTH command to processing
-            any other commands. Optional. Check the redis-server manual for
-            directive *requirepass* if you would to use redis internal
-            authentication.
+   expire
+    Session TTL. Optional. Default value is 900 (seconds).
 
-        *database*
-            Database # to store session data. Optional. Default value is 0.
-
-        *expire*
-            Session TTL. Optional. Default value is 900 (seconds).
-
-        *ping*
-            Time (in seconds) to check connection alive and re-establish in
-            case of closed connection. Optional. Default value is 5
-            (seconds). Redis server close connection after a client is idle
-            for seconds but server instance might be configured to not close
-            client's connection. Check the redis server manual.
-
-        *debug*
-            Enables debug information to STDERR, including all interactions
-            with the redis-server. Optional. Default value is 0.
+   debug
+    Enables debug information to STDERR, including all interactions with the
+    redis-server. Optional. Default value is 0.
 
 METHODS
-  init()
+  init
     Validate settings and creates the initial connection to redis-server.
 
-  create()
+  redis
+    Returns connection handle to the redis instance. Also establish new
+    connection in case of "dead" handle.
+
+  create
     Creates a new object, runs "flush" and returns the object.
 
-  flush()
+  flush
     Writes the session information to the Redis database.
 
-  retrieve()
+  retrieve
     Retrieves session information from the Redis database.
 
-  destroy()
+  destroy
     Deletes session information from the Redis database.
 
 BUGS
@@ -108,11 +99,11 @@ SEE ALSO
     redis.io <http://redis.io>
 
 AUTHOR
-    Anton Gerasimov, <chim@cpan.org>
+    Anton Gerasimov <chim@cpan.org>
 
 COPYRIGHT AND LICENSE
-    Copyright (C) 2012 by Anton Gerasimov
+    This software is copyright (c) 2012 by Anton Gerasimov.
 
-    This library is free software; you can redistribute it and/or modify it
-    under the same terms as Perl itself.
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
 

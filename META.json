@@ -3,8 +3,8 @@
    "author" : [
       "Anton Gerasimov <chim@cpan.org>"
    ],
-   "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.64, CPAN::Meta::Converter version 2.112621",
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -16,32 +16,56 @@
    "no_index" : {
       "directory" : [
          "t",
-         "inc"
+         "xt",
+         "eg",
+         "examples",
+         "corpus"
+      ],
+      "namespace" : [
+         "t::lib"
+      ],
+      "package" : [
+         "DB"
       ]
    },
    "prereqs" : {
-      "build" : {
-         "requires" : {
-            "Test::More" : "0.98",
-            "Test::Pod" : "1.22"
-         }
-      },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : 0
+            "ExtUtils::MakeMaker" : "6.30"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Pod::Coverage::TrustPod" : "0",
+            "Test::CPAN::Meta" : "0",
+            "Test::Pod" : "1.41",
+            "Test::Pod::Coverage" : "1.08"
          }
       },
       "runtime" : {
          "requires" : {
-            "Carp" : 0,
+            "Carp" : "1.26",
             "Dancer" : "1.3072",
             "Redis" : "1.955",
-            "Storable" : 0,
-            "parent" : 0,
-            "perl" : "5.010000",
-            "strict" : 0,
-            "warnings" : 0
+            "Storable" : "2.27",
+            "feature" : "0",
+            "parent" : "0",
+            "perl" : "5.010001",
+            "strict" : "0",
+            "warnings" : "0"
          }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0.98",
+            "Test::Pod" : "1.22"
+         }
+      }
+   },
+   "provides" : {
+      "Dancer::Session::Redis" : {
+         "file" : "lib/Dancer/Session/Redis.pm",
+         "version" : "0.21"
       }
    },
    "release_status" : "stable",
@@ -49,9 +73,14 @@
       "bugtracker" : {
          "web" : "https://github.com/Wu-Wu/Dancer-Session-Redis/issues"
       },
+      "homepage" : "https://metacpan.org/release/Dancer-Session-Redis",
       "repository" : {
-         "url" : "https://github.com/Wu-Wu/Dancer-Session-Redis"
+         "type" : "git",
+         "url" : "git://github.com/Wu-Wu/Dancer-Session-Redis.git",
+         "web" : "https://github.com/Wu-Wu/Dancer-Session-Redis"
       }
    },
-   "version" : "0.20"
+   "version" : "0.21",
+   "x_authority" : "cpan:CHIM"
 }
+
