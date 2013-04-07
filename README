@@ -2,7 +2,7 @@ NAME
     Dancer::Session::Redis - Redis backend for Dancer Session Engine
 
 VERSION
-    version 0.21
+    version 0.22
 
 SYNOPSIS
         # in the Dancer config.yml:

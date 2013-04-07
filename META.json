@@ -48,15 +48,15 @@
             "Dancer" : "1.3072",
             "Redis" : "1.955",
             "Storable" : "2.27",
-            "feature" : "0",
             "parent" : "0",
-            "perl" : "5.010001",
+            "perl" : "5.008009",
             "strict" : "0",
             "warnings" : "0"
          }
       },
       "test" : {
          "requires" : {
+            "Test::Exception" : "0",
             "Test::More" : "0.98",
             "Test::Pod" : "1.22"
          }
@@ -65,7 +65,7 @@
    "provides" : {
       "Dancer::Session::Redis" : {
          "file" : "lib/Dancer/Session/Redis.pm",
-         "version" : "0.21"
+         "version" : "0.22"
       }
    },
    "release_status" : "stable",
@@ -80,7 +80,7 @@
          "web" : "https://github.com/Wu-Wu/Dancer-Session-Redis"
       }
    },
-   "version" : "0.21",
+   "version" : "0.22",
    "x_authority" : "cpan:CHIM"
 }
 

@@ -10,7 +10,7 @@ use Dancer::Config 'setting';
 use Storable ();
 use Carp ();
 
-our $VERSION = '0.21'; # VERSION
+our $VERSION = '0.22'; # VERSION
 our $AUTHORITY = 'cpan:CHIM'; # AUTHORITY
 
 my $_redis;
@@ -126,7 +126,7 @@ Dancer::Session::Redis - Redis backend for Dancer Session Engine
 
 =head1 VERSION
 
-version 0.21
+version 0.22
 
 =head1 SYNOPSIS
 

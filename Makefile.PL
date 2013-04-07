@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.010001;
+use 5.008009;
 
 use ExtUtils::MakeMaker 6.30;
 
@@ -12,6 +12,7 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "Redis backend for Dancer Session Engine",
   "AUTHOR" => "Anton Gerasimov <chim\@cpan.org>",
   "BUILD_REQUIRES" => {
+    "Test::Exception" => 0,
     "Test::More" => "0.98",
     "Test::Pod" => "1.22"
   },
@@ -27,12 +28,11 @@ my %WriteMakefileArgs = (
     "Dancer" => "1.3072",
     "Redis" => "1.955",
     "Storable" => "2.27",
-    "feature" => 0,
     "parent" => 0,
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.21",
+  "VERSION" => "0.22",
   "test" => {
     "TESTS" => "t/*.t"
   }
